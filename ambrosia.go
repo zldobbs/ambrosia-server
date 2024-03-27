@@ -6,12 +6,20 @@ import (
 	"net/http"
 )
 
+// === Route handlers ===
+
+// Handle requests to root index
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	// Handle requests to root index
 	fmt.Fprintf(w, "Welcome to the server!")
+}
+
+// Respond to heartbeat requests to indicate server is reachable and up as expected
+func heartbeatHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "OK")
 }
 
 func main() {
 	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/heartbeat", heartbeatHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
