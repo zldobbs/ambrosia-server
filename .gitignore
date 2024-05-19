@@ -1,3 +1,7 @@
 # Build
 ambrosia-server
 ambrosia-server.exe
+
+# Dev Environment
+.vscode
+.DS_Store
