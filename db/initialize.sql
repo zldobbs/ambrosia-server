@@ -21,6 +21,16 @@ CREATE TABLE recipe (
     description VARCHAR(255)
 );
 
+CREATE TABLE recipe (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    creator_id INT REFERENCES "user" (user_id) ON UPDATE CASCADE ON DELETE CASCADE, -- User ID of the creator
+    ingredients JSONB,
+    description TEXT,
+    steps TEXT[],
+    prep_time_minutes INT,
+);
+
 CREATE TABLE ingredient (
     ingredient_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES "user" (user_id) ON UPDATE CASCADE ON DELETE CASCADE,
