@@ -24,7 +24,7 @@ CREATE TABLE recipe (
 CREATE TABLE recipe (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    creator_id INT REFERENCES "user" (user_id) ON UPDATE CASCADE ON DELETE CASCADE, -- User ID of the creator
+    creator_id INT REFERENCES "user" (user_id) ON UPDATE CASCADE ON DELETE CASCADE,
     ingredients JSONB,
     description TEXT,
     steps TEXT[],
