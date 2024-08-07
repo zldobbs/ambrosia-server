@@ -20,7 +20,7 @@ type Recipe struct {
 	//companion picture id list
 }
 
-func CreateRecipeObject(name string, creatorID string, ingredients []uint64, description string, steps []string, prepTimeMinutes int) Recipe {
+func (recipeObject *Recipe) CreateRecipeObject(name string, creatorID string, ingredients []uint64, description string, steps []string, prepTimeMinutes int) Recipe {
 	id := uuid.New()
 
 	recipe := Recipe{
@@ -50,3 +50,7 @@ func (recipeObject *Recipe) SaveRecipe(db *sql.DB, recipe Recipe) error {
 	}
 	return nil
 }
+
+// func DeleteRecipe(db *sql.DB, id UUID) error {
+
+//}
