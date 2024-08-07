@@ -20,7 +20,7 @@ type Recipe struct {
 	//companion picture id list
 }
 
-func (recipeObject *Recipe) CreateRecipeObject(name string, creatorID string, ingredients []uint64, description string, steps []string, prepTimeMinutes int) Recipe {
+func CreateRecipeObject(name string, creatorID string, ingredients []uint64, description string, steps []string, prepTimeMinutes int) Recipe {
 	id := uuid.New()
 
 	recipe := Recipe{
