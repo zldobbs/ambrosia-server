@@ -27,7 +27,7 @@ CREATE TABLE recipe (
     creator_id INT REFERENCES "user" (user_id) ON UPDATE CASCADE ON DELETE CASCADE,
     ingredients JSONB,
     description TEXT,
-    steps TEXT[],
+    steps JSONB,
     prep_time_minutes INT,
 );
 

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"ambrosia-server/backend/utils/json"
+	"ambrosia-server/backend/utils"
 	"database/sql"
 
 	"github.com/google/uuid"
@@ -36,8 +36,8 @@ func (recipeObject *Recipe) CreateRecipeObject(name string, creatorID string, in
 }
 
 func (recipeObject *Recipe) SaveRecipe(db *sql.DB, recipe Recipe) error {
-	ingredients := json.ToJSON(recipe.Ingredients)
-	steps := json.ToJSON(recipe.Steps)
+	ingredients, _ := utils.ToJSON(recipe.Ingredients)
+	steps, _ := utils.ToJSON(recipe.Steps)
 
 	query := `
 	INSERT INTO recipes (id, name, creator_id, ingredients, description, steps, prep_time_minutes)
