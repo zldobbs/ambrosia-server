@@ -22,7 +22,7 @@ CREATE TABLE recipe (
 );
 
 CREATE TABLE recipe (
-    id UUID PRIMARY KEY,
+    id PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     creator_id INT REFERENCES "user" (user_id) ON UPDATE CASCADE ON DELETE CASCADE,
     ingredients JSONB,

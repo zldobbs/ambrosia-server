@@ -2,7 +2,7 @@ package models
 
 import (
 	"ambrosia-server/backend/utils"
-	
+
 	"database/sql"
 
 	"github.com/google/uuid"
@@ -53,6 +53,6 @@ func (recipeObject *Recipe) SaveRecipe(db *sql.DB, recipe Recipe) error {
 	return nil
 }
 
-func DeleteRecipe(db *sql.DB, id UUUID) {
+func DeleteRecipe(db *sql.DB, id uuid.UUID) {
 	utils.Delete(db, `recipes`, id)
 }
