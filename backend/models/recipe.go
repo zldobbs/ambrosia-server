@@ -2,6 +2,7 @@ package models
 
 import (
 	"ambrosia-server/backend/utils"
+	
 	"database/sql"
 
 	"github.com/google/uuid"
@@ -16,6 +17,7 @@ type Recipe struct {
 	Description     string
 	Steps           []string
 	PrepTimeMinutes int
+
 	//video id
 	//companion picture id list
 }
@@ -41,7 +43,7 @@ func (recipeObject *Recipe) SaveRecipe(db *sql.DB, recipe Recipe) error {
 
 	query := `
 	INSERT INTO recipes (id, name, creator_id, ingredients, description, steps, prep_time_minutes)
-	VALUES ($1, $2, $3, $4, $5, $6, $7)
+	VALUES ($1, $2, $3, $4, $5, $6, $7);
 	`
 
 	_, err := db.Exec(query, recipe.ID, recipe.Name, recipe.CreatorID, ingredients, recipe.Description, steps, recipe.PrepTimeMinutes)
@@ -51,6 +53,6 @@ func (recipeObject *Recipe) SaveRecipe(db *sql.DB, recipe Recipe) error {
 	return nil
 }
 
-// func DeleteRecipe(db *sql.DB, id UUID) error {
-
-//}
+func DeleteRecipe(db *sql.DB, id UUUID) {
+	utils.Delete(db, `recipes`, id)
+}
