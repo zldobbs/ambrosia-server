@@ -8,7 +8,7 @@ Backend server for Ambrosia.
 
 ### GraphQL Code Gen
 
-1. Run
+1. Run `go generate ./..` within the graph/ directory to update based on changes to [graph/schema.graphqls](./graph/schema.graphqls)
 
 ### Server Build and Launching
 
@@ -24,3 +24,5 @@ Backend server for Ambrosia.
 
   > NOTE: While testing may need to recreate the database from scratch.
   > If this is the case, first drop the existing database with: `DROP DATABASE ambrosia;` before running [db/initialize.sql](./db/initialize.sql).
+
+1. Additionally run the seed.sql script to populate the ambrosia database with some sample data.

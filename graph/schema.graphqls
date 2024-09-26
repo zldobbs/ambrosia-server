@@ -1,0 +1,47 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Recipe {
+  recipeId: ID!
+  name: String!
+  description: String!
+  ingredients: [Ingredient!]!
+  user: User!
+}
+
+type Ingredient {
+  ingredientId: ID!
+  name: String!
+  description: String!
+  user: User!
+}
+
+type User {
+  userId: ID!
+  name: String!
+}
+
+type Query {
+  recipes: [Recipe!]
+  ingredients: [Ingredient!]
+}
+
+# TODO: Should IDs be strings or int (ID)?
+input NewIngredient {
+  name: String!
+  description: String!
+  userId: ID!
+}
+
+input NewRecipe {
+  name: String!
+  description: String!
+  userId: ID!
+}
+
+# TODO: What about creating/getting users?
+type Mutation {
+  createIngredient(input: NewIngredient!): Ingredient!
+  createRecipe(input: NewRecipe!): Recipe!
+}

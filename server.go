@@ -3,7 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/zldobbs/ambrosia-server/db"
+	"github.com/zldobbs/ambrosia-server/graph"
 )
 
 // Middleware function that logs when a URL is requested.
@@ -41,20 +46,38 @@ func authMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+const defaultPort = "8080"
+
 // Main entrypoint; will handle launching the HTTP server.
 func main() {
 	// TODO: Consider using gorilla/mux
 	mux := http.NewServeMux()
+
+	port := os.Getenv("AMBROSIA_BACKEND_PORT")
+	if port == "" {
+		port = defaultPort
+	}
+
+	// Get database connection pool
+	pool := db.InitDB()
+
+	// GraphQL Server (using gqlgen)
+	// TODO: Setup "playground" for testing (or use postman)
+	gql_server := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB_POOL: pool}}))
 
 	// Public routes
 	mux.HandleFunc("/", indexHandler)
 	mux.HandleFunc("/heartbeat", heartbeatHandler)
 
 	// Protected routes
-	mux.Handle("/graphql", authMiddleware(http.HandlerFunc(graphQLHandler)))
+	mux.Handle("/graphql", authMiddleware(gql_server))
 
 	// Wrap all handlers with logging middleware
 	loggedMux := logMiddleware(mux)
 
-	log.Fatal(http.ListenAndServe(":8080", loggedMux))
+	log.Fatal(http.ListenAndServe(":"+port, loggedMux))
+}
+
+func InitDB() {
+	panic("unimplemented")
 }

@@ -8,3 +8,6 @@ ambrosia-server.exe
 
 # Database
 database/
+
+# Secrets!
+.env
