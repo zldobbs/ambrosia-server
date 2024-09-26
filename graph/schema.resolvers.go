@@ -7,66 +7,52 @@ package graph
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/zldobbs/ambrosia-server/graph/model"
 )
 
 // CreateIngredient is the resolver for the createIngredient field.
 func (r *mutationResolver) CreateIngredient(ctx context.Context, input model.NewIngredient) (*model.Ingredient, error) {
-	// TODO: Need to get consistent around how to use pgx
-	// 	- Also, the GQL schema models likely need updating to properly serialize against the SQL column names
-	// could maybe get away with using SQL aliases instead? Or look at the `db:` specifier on go structs, idk how to get this on the model itself.
-
 	// Create ingredient
-	ingredient_insert_row := r.DB_POOL.QueryRow(
-		context.Background(),
-		"INSERT INTO ingredient (name, description, user_id) VALUES ($1, $2, $3) RETURNING ingredient_id::TEXT",
+	row := r.DB_POOL.QueryRow(
+		ctx,
+		`
+		INSERT INTO ingredient (name, description, user_id)
+		VALUES ($1, $2, $3)
+		RETURNING ingredient_id::TEXT
+		`,
 		input.Name,
 		input.Description,
 		input.UserID,
 	)
 
 	var ingredient_id string
-	err := ingredient_insert_row.Scan(&ingredient_id)
+	err := row.Scan(&ingredient_id)
 	if err != nil {
-		log.Println(fmt.Errorf("Failed to create ingredient from %v, error: %v", input, err))
-		return nil, err
+		return nil, fmt.Errorf("failed to create ingredient from %v, error: %v", input, err)
 	}
 
 	// Fetch constructed ingredient
-	ingredient_query_row := r.DB_POOL.QueryRow(
-		context.Background(),
-		"SELECT u.user_id, u.name, i.ingredient_id, i.name, i.description FROM ingredient i JOIN user_account u ON i.user_id=u.user_id WHERE i.ingredient_id = $1",
+	row = r.DB_POOL.QueryRow(
+		ctx,
+		`
+		SELECT i.ingredient_id, i.name, i.description, u.user_id, u.name
+		FROM ingredient i
+		JOIN user_account u ON i.user_id=u.user_id
+		WHERE i.ingredient_id = $1
+		`,
 		ingredient_id,
 	)
 
-	// TODO: This feels unnecessary, have to be an easier way to exchange this data
-	// Or should at least use the db: specifier?
-	type UserIngredientCombo struct {
-		UserID                string
-		UserName              string
-		IngredientID          string
-		IngredientName        string
-		IngredientDescription string
-	}
-
-	// Make sure to initialize a struct before trying to read data in or it will cause a nil pointer error!
-	user_ingredient_combo := &UserIngredientCombo{}
-	err = ingredient_query_row.Scan(
-		&user_ingredient_combo.UserID,
-		&user_ingredient_combo.UserName,
-		&user_ingredient_combo.IngredientID,
-		&user_ingredient_combo.IngredientName,
-		&user_ingredient_combo.IngredientDescription,
-	)
+	// TODO: This method should be moved to database.go for re-use (ex: see Ingredients())
+	var user model.User
+	var ingredient model.Ingredient
+	err = row.Scan(&ingredient.IngredientID, &ingredient.Name, &ingredient.Description, &user.UserID, &user.Name)
 	if err != nil {
-		log.Println(fmt.Errorf("Failed to fetch newly created ingredient %v", err))
-		return nil, err
+		return nil, fmt.Errorf("failed to fetch newly created ingredient %v", err)
 	}
 
-	user := model.User{UserID: user_ingredient_combo.UserID, Name: user_ingredient_combo.UserName}
-	ingredient := model.Ingredient{IngredientID: ingredient_id, Name: user_ingredient_combo.IngredientName, Description: user_ingredient_combo.IngredientDescription, User: &user}
+	ingredient.User = &user
 
 	return &ingredient, nil
 }
@@ -83,7 +69,40 @@ func (r *queryResolver) Recipes(ctx context.Context) ([]*model.Recipe, error) {
 
 // Ingredients is the resolver for the ingredients field.
 func (r *queryResolver) Ingredients(ctx context.Context) ([]*model.Ingredient, error) {
-	panic(fmt.Errorf("not implemented: Ingredients - ingredients"))
+	// Query database for all ingredients
+	// TODO: Limit responses here, use pagination
+	rows, err := r.DB_POOL.Query(
+		ctx,
+		`
+		SELECT i.ingredient_id, i.name, i.description, u.user_id, u.name
+		FROM ingredient i
+		JOIN user_account u ON i.user_id = u.user_id
+		`,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get ingredients froms server; error: %s", err)
+	}
+
+	var ingredients []*model.Ingredient
+	for rows.Next() {
+		var user model.User
+		var ingredient model.Ingredient
+
+		err := rows.Scan(&ingredient.IngredientID, &ingredient.Name, &ingredient.Description, &user.UserID, &user.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse ingredients into struct; error: %s", err)
+		}
+
+		ingredient.User = &user
+		ingredients = append(ingredients, &ingredient)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse through returned SQL rows; error: %s", err)
+	}
+
+	return ingredients, nil
 }
 
 // Mutation returns MutationResolver implementation.

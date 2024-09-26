@@ -12,14 +12,14 @@ import (
 // Initialize a connection pool for the Ambrosia database.
 // Using pgx to connect to Postgres.
 // Expects to find connection information in environment:
-// 	- POSTGRES_USER: Database user username
-//	- POSTGRES_PASSWORD: Database user password
-// 	- POSTGRES_DB: Database name
-// 	- POSTGRES_HOST: Database hostname
-// 	- POSTGRES_PORT: Database port
+//   - POSTGRES_USER: Database user username
+//   - POSTGRES_PASSWORD: Database user password
+//   - POSTGRES_DB: Database name
+//   - POSTGRES_HOST: Database hostname
+//   - POSTGRES_PORT: Database port
 //
 // Returns:
-// 	- Connection pool for configured database
+//   - Connection pool for configured database
 func InitDB() *pgxpool.Pool {
 	// Load configuration from the environment
 	user := os.Getenv("POSTGRES_USER")
@@ -27,6 +27,10 @@ func InitDB() *pgxpool.Pool {
 	dbname := os.Getenv("POSTGRES_DB")
 	host := os.Getenv("POSTGRES_HOST")
 	port := os.Getenv("POSTGRES_PORT")
+
+	if user == "" || password == "" || dbname == "" || host == "" || port == "" {
+		panic(fmt.Errorf("could not find database connection information in environment"))
+	}
 
 	// Connection string
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
@@ -51,3 +55,5 @@ func InitDB() *pgxpool.Pool {
 
 	return pool
 }
+
+// TODO: Define additonal methods here for common database operations, instead of reusing them within the resolvers

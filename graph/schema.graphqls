@@ -27,7 +27,6 @@ type Query {
   ingredients: [Ingredient!]
 }
 
-# TODO: Should IDs be strings or int (ID)?
 input NewIngredient {
   name: String!
   description: String!

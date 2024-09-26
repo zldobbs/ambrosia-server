@@ -14,10 +14,10 @@ import (
 // Middleware function that logs when a URL is requested.
 //
 // Parameters:
-// 	- next: Next HTTP handler to call after this
+//   - next: Next HTTP handler to call after this
 //
 // Returns:
-// 	- This handler function as middleware
+//   - This handler function as middleware
 func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -31,10 +31,10 @@ func logMiddleware(next http.Handler) http.Handler {
 // If authentication fails, reject proceeding to the next handler.
 //
 // Parameters:
-// 	- next: Next HTTP handler to call after this
+//   - next: Next HTTP handler to call after this
 //
 // Returns:
-// 	- This handler function as middleware
+//   - This handler function as middleware
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// TODO: Implement actual authorization checks
@@ -60,10 +60,14 @@ func main() {
 
 	// Get database connection pool
 	pool := db.InitDB()
+	defer pool.Close()
 
 	// GraphQL Server (using gqlgen)
-	// TODO: Setup "playground" for testing (or use postman)
-	gql_server := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB_POOL: pool}}))
+	gql_server := handler.NewDefaultServer(
+		graph.NewExecutableSchema(
+			graph.Config{Resolvers: &graph.Resolver{DB_POOL: pool}},
+		),
+	)
 
 	// Public routes
 	mux.HandleFunc("/", indexHandler)
@@ -75,6 +79,8 @@ func main() {
 	// Wrap all handlers with logging middleware
 	loggedMux := logMiddleware(mux)
 
+	// TODO: Consider running the server in a goroutine for better logging here
+	log.Println("ambrosia server starting now, no output means OK")
 	log.Fatal(http.ListenAndServe(":"+port, loggedMux))
 }
 
