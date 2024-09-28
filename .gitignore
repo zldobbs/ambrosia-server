@@ -5,3 +5,9 @@ ambrosia-server.exe
 # Dev Environment
 .vscode
 .DS_Store
+
+# Database
+database/
+
+# Secrets!
+.env
