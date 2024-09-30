@@ -46,6 +46,30 @@ func authMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// Middleware function for enabling CORS on target routes
+//
+// Parameters:
+//   - next: Next HTTP handler to call after this
+//
+// Returns:
+//   - This handler function as middleware
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: CORS should be restricted in production!
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		// Handle preflight requests
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 const defaultPort = "8080"
 
 // Main entrypoint; will handle launching the HTTP server.
@@ -76,12 +100,13 @@ func main() {
 	// Protected routes
 	mux.Handle("/graphql", authMiddleware(gql_server))
 
-	// Wrap all handlers with logging middleware
+	// Wrap all handlers with logging and cors middleware
 	loggedMux := logMiddleware(mux)
+	corsLoggedMux := corsMiddleware(loggedMux)
 
 	// TODO: Consider running the server in a goroutine for better logging here
 	log.Println("ambrosia server starting now, no output means OK")
-	log.Fatal(http.ListenAndServe(":"+port, loggedMux))
+	log.Fatal(http.ListenAndServe(":"+port, corsLoggedMux))
 }
 
 func InitDB() {
