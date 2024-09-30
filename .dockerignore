@@ -1,0 +1,4 @@
+database/
+.env/
+ambrosia-server
+ambrosia-server.exe
