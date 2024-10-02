@@ -2,6 +2,10 @@
 #
 # https://gqlgen.com/getting-started/
 
+# To regenerate:
+#   1. cd graph/
+#   2. `go generate`
+
 type Recipe {
   recipeId: ID!
   name: String!
@@ -27,6 +31,10 @@ type Query {
   ingredients: [Ingredient!]
 }
 
+input ExistingIngredientId {
+  ingredientId: ID!
+}
+
 input NewIngredient {
   name: String!
   description: String!
@@ -36,6 +44,7 @@ input NewIngredient {
 input NewRecipe {
   name: String!
   description: String!
+  ingredients: [ExistingIngredientId!]!
   userId: ID!
 }
 

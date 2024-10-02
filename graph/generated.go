@@ -229,6 +229,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputExistingIngredientId,
 		ec.unmarshalInputNewIngredient,
 		ec.unmarshalInputNewRecipe,
 	)
@@ -3114,6 +3115,33 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputExistingIngredientId(ctx context.Context, obj interface{}) (model.ExistingIngredientID, error) {
+	var it model.ExistingIngredientID
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"ingredientId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "ingredientId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ingredientId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IngredientID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewIngredient(ctx context.Context, obj interface{}) (model.NewIngredient, error) {
 	var it model.NewIngredient
 	asMap := map[string]interface{}{}
@@ -3162,7 +3190,7 @@ func (ec *executionContext) unmarshalInputNewRecipe(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "description", "userId"}
+	fieldsInOrder := [...]string{"name", "description", "ingredients", "userId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3183,6 +3211,13 @@ func (ec *executionContext) unmarshalInputNewRecipe(ctx context.Context, obj int
 				return it, err
 			}
 			it.Description = data
+		case "ingredients":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ingredients"))
+			data, err := ec.unmarshalNExistingIngredientId2ᚕᚖgithubᚗcomᚋzldobbsᚋambrosiaᚑserverᚋgraphᚋmodelᚐExistingIngredientIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Ingredients = data
 		case "userId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
 			data, err := ec.unmarshalNID2string(ctx, v)
@@ -3844,6 +3879,28 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNExistingIngredientId2ᚕᚖgithubᚗcomᚋzldobbsᚋambrosiaᚑserverᚋgraphᚋmodelᚐExistingIngredientIDᚄ(ctx context.Context, v interface{}) ([]*model.ExistingIngredientID, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.ExistingIngredientID, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNExistingIngredientId2ᚖgithubᚗcomᚋzldobbsᚋambrosiaᚑserverᚋgraphᚋmodelᚐExistingIngredientID(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNExistingIngredientId2ᚖgithubᚗcomᚋzldobbsᚋambrosiaᚑserverᚋgraphᚋmodelᚐExistingIngredientID(ctx context.Context, v interface{}) (*model.ExistingIngredientID, error) {
+	res, err := ec.unmarshalInputExistingIngredientId(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {

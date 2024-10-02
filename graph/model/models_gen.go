@@ -2,6 +2,10 @@
 
 package model
 
+type ExistingIngredientID struct {
+	IngredientID string `json:"ingredientId"`
+}
+
 type Ingredient struct {
 	IngredientID string `json:"ingredientId"`
 	Name         string `json:"name"`
@@ -19,9 +23,10 @@ type NewIngredient struct {
 }
 
 type NewRecipe struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	UserID      string `json:"userId"`
+	Name        string                  `json:"name"`
+	Description string                  `json:"description"`
+	Ingredients []*ExistingIngredientID `json:"ingredients"`
+	UserID      string                  `json:"userId"`
 }
 
 type Query struct {
