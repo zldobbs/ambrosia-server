@@ -28,6 +28,7 @@ type User {
 
 type Query {
   recipes: [Recipe!]
+  recipeById(recipeId: ID!): Recipe
   ingredients: [Ingredient!]
 }
 

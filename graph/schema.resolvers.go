@@ -82,6 +82,11 @@ func (r *queryResolver) Recipes(ctx context.Context) ([]*model.Recipe, error) {
 	return db.GetRecipes(r.DB_POOL, ctx, nil)
 }
 
+// RecipeByID is the resolver for the recipeById field.
+func (r *queryResolver) RecipeByID(ctx context.Context, recipeID string) (*model.Recipe, error) {
+	return db.GetRecipeById(r.DB_POOL, recipeID, ctx)
+}
+
 // Ingredients is the resolver for the ingredients field.
 func (r *queryResolver) Ingredients(ctx context.Context) ([]*model.Ingredient, error) {
 	return db.GetIngredients(r.DB_POOL, ctx, nil)
