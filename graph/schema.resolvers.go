@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/zldobbs/ambrosia-server/db"
 	"github.com/zldobbs/ambrosia-server/graph/model"
 )
 
@@ -32,77 +33,63 @@ func (r *mutationResolver) CreateIngredient(ctx context.Context, input model.New
 		return nil, fmt.Errorf("failed to create ingredient from %v, error: %v", input, err)
 	}
 
-	// Fetch constructed ingredient
-	row = r.DB_POOL.QueryRow(
-		ctx,
-		`
-		SELECT i.ingredient_id, i.name, i.description, u.user_id, u.name
-		FROM ingredient i
-		JOIN user_account u ON i.user_id=u.user_id
-		WHERE i.ingredient_id = $1
-		`,
-		ingredient_id,
-	)
-
-	// TODO: This method should be moved to database.go for re-use (ex: see Ingredients())
-	var user model.User
-	var ingredient model.Ingredient
-	err = row.Scan(&ingredient.IngredientID, &ingredient.Name, &ingredient.Description, &user.UserID, &user.Name)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch newly created ingredient %v", err)
-	}
-
-	ingredient.User = &user
-
-	return &ingredient, nil
+	return db.GetIngredientById(r.DB_POOL, ingredient_id, ctx)
 }
 
 // CreateRecipe is the resolver for the createRecipe field.
 func (r *mutationResolver) CreateRecipe(ctx context.Context, input model.NewRecipe) (*model.Recipe, error) {
-	panic(fmt.Errorf("not implemented: CreateRecipe - createRecipe"))
+	// First create the recipe
+	row := r.DB_POOL.QueryRow(
+		ctx,
+		`
+		INSERT INTO recipe (name, description, user_id)
+		VALUES ($1, $2, $3)
+		RETURNING recipe_id::TEXT
+		`,
+		input.Name,
+		input.Description,
+		input.UserID,
+	)
+
+	var recipe_id string
+	err := row.Scan(&recipe_id)
+	if err != nil {
+		return nil, fmt.Errorf("could not grab the newly created recipe id: %v", err)
+	}
+
+	// Next add each ingredient as a relationship
+	for _, existing_ingredient_id := range input.Ingredients {
+		_, err = r.DB_POOL.Exec(
+			ctx,
+			`
+			INSERT INTO recipe_ingredient (recipe_id, ingredient_id)
+			VALUES ($1, $2)
+			`,
+			recipe_id,
+			existing_ingredient_id.IngredientID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("could not get the returned recipe_ingredient_id: %v", err)
+		}
+	}
+
+	// Collect the entire recipe.
+	return db.GetRecipeById(r.DB_POOL, recipe_id, ctx)
 }
 
 // Recipes is the resolver for the recipes field.
 func (r *queryResolver) Recipes(ctx context.Context) ([]*model.Recipe, error) {
-	panic(fmt.Errorf("not implemented: Recipes - recipes"))
+	return db.GetRecipes(r.DB_POOL, ctx, nil)
+}
+
+// RecipeByID is the resolver for the recipeById field.
+func (r *queryResolver) RecipeByID(ctx context.Context, recipeID string) (*model.Recipe, error) {
+	return db.GetRecipeById(r.DB_POOL, recipeID, ctx)
 }
 
 // Ingredients is the resolver for the ingredients field.
 func (r *queryResolver) Ingredients(ctx context.Context) ([]*model.Ingredient, error) {
-	// Query database for all ingredients
-	// TODO: Limit responses here, use pagination
-	rows, err := r.DB_POOL.Query(
-		ctx,
-		`
-		SELECT i.ingredient_id, i.name, i.description, u.user_id, u.name
-		FROM ingredient i
-		JOIN user_account u ON i.user_id = u.user_id
-		`,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get ingredients froms server; error: %s", err)
-	}
-
-	var ingredients []*model.Ingredient
-	for rows.Next() {
-		var user model.User
-		var ingredient model.Ingredient
-
-		err := rows.Scan(&ingredient.IngredientID, &ingredient.Name, &ingredient.Description, &user.UserID, &user.Name)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse ingredients into struct; error: %s", err)
-		}
-
-		ingredient.User = &user
-		ingredients = append(ingredients, &ingredient)
-	}
-
-	err = rows.Err()
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse through returned SQL rows; error: %s", err)
-	}
-
-	return ingredients, nil
+	return db.GetIngredients(r.DB_POOL, ctx, nil)
 }
 
 // Mutation returns MutationResolver implementation.
