@@ -86,6 +86,9 @@ func main() {
 	pool := db.InitDB()
 	defer pool.Close()
 
+	// Run any pending migrations on the database
+	db.MigrateFromPool(pool)
+
 	// GraphQL Server (using gqlgen)
 	gql_server := handler.NewDefaultServer(
 		graph.NewExecutableSchema(
@@ -107,8 +110,4 @@ func main() {
 	// TODO: Consider running the server in a goroutine for better logging here
 	log.Println("ambrosia server starting now, no output means OK")
 	log.Fatal(http.ListenAndServe(":"+port, corsLoggedMux))
-}
-
-func InitDB() {
-	panic("unimplemented")
 }
