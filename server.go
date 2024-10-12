@@ -108,7 +108,3 @@ func main() {
 	log.Println("ambrosia server starting now, no output means OK")
 	log.Fatal(http.ListenAndServe(":"+port, corsLoggedMux))
 }
-
-func InitDB() {
-	panic("unimplemented")
-}
