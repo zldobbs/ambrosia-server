@@ -10,9 +10,20 @@ if [ -z $name ]; then
     exit 1
 fi
 
-ts=$(date +%Y%m%d%H%M%S)
-ts_name="${ts}_${name}"
-echo "-- ${ts_name}_up" > $(dirname "$0")/migrations/${ts_name}_up.sql
-echo "-- ${ts_name}_down" > $(dirname "$0")/migrations/${ts_name}_down.sql
+migrations_dir=$(dirname "$0")/migrations
 
-echo "Created migration $ts_name"
+# Versioning via version numbers
+latest_version=$(ls $migrations_dir | tail -n -1 | cut -d '_' -f1)
+if [ -z $latest_version ]; then
+    latest_version=0
+fi
+version=$((latest_version + 1))
+
+# Versioning via timestamp
+ts=$(date +%Y%m%d%H%M%S)
+
+versioned_name="${ts}_${name}"
+echo "-- ${versioned_name}_up" > $migrations_dir/${versioned_name}_up.sql
+echo "-- ${versioned_name}_down" > $migrations_dir/${versioned_name}_down.sql
+
+echo "Created migration $versioned_name"

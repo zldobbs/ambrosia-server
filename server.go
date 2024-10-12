@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -87,7 +88,10 @@ func main() {
 	defer pool.Close()
 
 	// Run any pending migrations on the database
-	db.MigrateFromPool(pool)
+	err := db.MigrateFromPool(pool)
+	if err != nil {
+		log.Fatal(fmt.Errorf("failed to apply database migrations: %v", err))
+	}
 
 	// GraphQL Server (using gqlgen)
 	gql_server := handler.NewDefaultServer(

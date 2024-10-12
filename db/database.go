@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/zldobbs/ambrosia-server/graph/model"
@@ -62,6 +63,9 @@ func InitDB() *pgxpool.Pool {
 	return pool
 }
 
+// FIXME: Remove all migration capabilities from the server code, handle manually
+// FIXME: Remove all new dependencies added (golang-migrate, pq, ...)
+
 // Run all pending SQL migrations against the database
 //
 // Parameters:
@@ -81,7 +85,7 @@ func Migrate(db *sql.DB) error {
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations/",
+		"file://./migrations",
 		dbname,
 		driver,
 	)
@@ -94,10 +98,12 @@ func Migrate(db *sql.DB) error {
 	if err != nil {
 		if err != migrate.ErrNoChange {
 			return fmt.Errorf("migration failed: %v", err)
+		} else {
+			log.Println("No changes?")
 		}
 	}
 
-	fmt.Println("Migrations applied successfully!")
+	log.Println("Migrations applied successfully!")
 	return nil
 }
 

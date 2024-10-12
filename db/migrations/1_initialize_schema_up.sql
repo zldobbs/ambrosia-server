@@ -3,7 +3,6 @@
 
 -- Create and connect to the database
 CREATE DATABASE ambrosia;
-\c ambrosia
 
 -- Create tables for use within app
 
