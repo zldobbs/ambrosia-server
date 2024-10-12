@@ -12,8 +12,6 @@ Backend server for Ambrosia.
 
 ### Server Build and Launching
 
-> TODO: Put the server in a container, launch with compose.yaml
-
 1. Define the environment variables required for connecting to the server:
 
 - `POSTGRES_USER`: Database user (e.g. `postgres`)
@@ -26,14 +24,35 @@ Backend server for Ambrosia.
 1. Run `./ambrosia-server`
 1. Navigate to <http://localhost:8080> to see the server running
 
-## Database Setup
+## Database
 
-Scripts are provided to help setup the expected tables and seed data.
-These can be found in [/db/sql](./db/sql)
+The server expects to connect to a Postgres database with connection information corresponding to the environment variables defined above.
 
-1. Run initialize.sql within a `psql` terminal
+### Migrations
 
-  > NOTE: While testing may need to recreate the database from scratch.
-  > If this is the case, first drop the existing database with: `DROP DATABASE ambrosia;` before running [initialize.sql](./db/sql/initialize.sql).
+#### Creating Migrations
 
-1. Additionally run the seed.sql script to populate the ambrosia database with some sample data.
+Database migrations track changes over time to the database schema.
+Any changes to the schema should be made via migrations.
+
+1. Run `db/create_migration.sh <migration_name>` to generate migration files within db/migrations
+1. Add appropriate SQL logic to the generated files to perform the migration
+
+- The "up" file should include logic to apply the schema change (e.g. adding a column)
+- The "down" file should include logic to revert the schema change (e.g. removing the column that was added)
+
+#### Applying Migrations
+
+Run the following script to apply any pending migrations to the database:
+
+```sh
+db/apply_migrations.sh
+```
+
+### Seeding
+
+Populate initial data to the database using db/sql/seed.sql:
+
+```bash
+psql -U postgres -f db/sql/seed.sql
+```

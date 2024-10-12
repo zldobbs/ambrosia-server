@@ -1,8 +1,5 @@
--- Initialize the ambrosia database
-
--- Create and connect to the database
-CREATE DATABASE ambrosia;
-\c ambrosia
+-- 20241012080300_initialize_schema_up
+-- Initial schema creation
 
 -- Create tables for use within app
 

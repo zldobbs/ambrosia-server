@@ -2,17 +2,12 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/zldobbs/ambrosia-server/graph/model"
 )
 
@@ -61,64 +56,6 @@ func InitDB() *pgxpool.Pool {
 	}
 
 	return pool
-}
-
-// FIXME: Remove all migration capabilities from the server code, handle manually
-// FIXME: Remove all new dependencies added (golang-migrate, pq, ...)
-
-// Run all pending SQL migrations against the database
-//
-// Parameters:
-//   - db: raw SQL db connection
-//
-// Returns:
-//   - Error if migration not successful
-func Migrate(db *sql.DB) error {
-	dbname := os.Getenv("POSTGRES_DB")
-	if dbname == "" {
-		return fmt.Errorf("could not find database name in environment")
-	}
-
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
-	if err != nil {
-		return fmt.Errorf("could not create driver: %v", err)
-	}
-
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://./migrations",
-		dbname,
-		driver,
-	)
-	if err != nil {
-		return fmt.Errorf("could not create migration instance: %v", err)
-	}
-
-	// Run the migrations (up or down)
-	err = m.Up()
-	if err != nil {
-		if err != migrate.ErrNoChange {
-			return fmt.Errorf("migration failed: %v", err)
-		} else {
-			log.Println("No changes?")
-		}
-	}
-
-	log.Println("Migrations applied successfully!")
-	return nil
-}
-
-// Run all pending SQL migrations against the database from a pool connection.
-//
-// Parameters:
-//   - pool: psql database pool
-//
-// Returns:
-//   - Error if migration not successful
-func MigrateFromPool(pool *pgxpool.Pool) error {
-	db := stdlib.OpenDBFromPool(pool)
-	defer db.Close()
-
-	return Migrate(db)
 }
 
 // Construct a "WHERE" clause from a map of options.

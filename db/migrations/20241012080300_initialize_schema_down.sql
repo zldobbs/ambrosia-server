@@ -1,4 +1,4 @@
--- 20241011093311_initialize_schema_down
+-- 20241012080300_initialize_schema_down
 -- Teardown database
 
 DROP TABLE recipe_ingredient;
